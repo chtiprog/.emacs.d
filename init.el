@@ -52,7 +52,7 @@
 ;;;; Appearance
 ;;----------------------------------------------------------------------------
 
-;; (load-theme 'monokai :no-confirm)
+(load-theme 'monokai :no-confirm)
 ;; (load-theme 'solarized-light :no-confirm)
 ;; (load-theme 'solarized-dark :no-confirm)
 ;; (load-theme 'gruvbox :no-confirm)
@@ -60,7 +60,7 @@
 
 ;; (load-theme 'smyx :no-confirm)  ;; dark black/greyish theme
 ;; (load-theme 'twilight-bright :no-confirm)  ;; light theme
-(load-theme 'twilight-anti-bright :no-confirm)  ;; dark theme
+;; (load-theme 'twilight-anti-bright :no-confirm)  ;; dark theme
 ;; (load-theme 'badger :no-confirm)  ;; dark theme based on wombat
 
 (setq visible-bell t
@@ -73,11 +73,11 @@
   (tooltip-mode -1)
   (blink-cursor-mode -1)
   (mw/set-best-font '(
+                      ("Ubuntu Mono" 14)
                       ("Fira Mono" 14)
                       ("Inconsolata" 16)
                       ("DejaVu Sans Mono" 14)
                       ("Input Mono" 14)
-                      ("Ubuntu Mono" 16)
                       ("Menlo" 14)
                       ("Input Mono Condensed" 14)
                       ("Input Mono Narrow" 14)
@@ -141,7 +141,6 @@
 
 
 (use-package auto-complete
-  :disabled t
   :diminish auto-complete-mode
   :config
   (global-auto-complete-mode t))
@@ -353,27 +352,25 @@
   (golden-ratio-mode t))
 
 
-(use-package js
-  :requires js2-mode
-  :mode ("\\.json$" . js-mode)
+(use-package js2-mode
+  :mode (("\\.js$" . js2-mode)
+         ("\\.json$" . js2-mode)
+         ("Jakefile$" . js2-mode))
+  :interpreter ("node" . js2-mode)
+  :init
+  (add-hook 'js-mode-hook (lambda () (setq js-indent-level 2)))
+  (add-hook 'js-mode-hook 'js2-mode)
+  (add-hook 'js2-mode-hook (lambda () (setq mode-name "js2")))
+  (add-hook 'js2-mode-hook 'ac-js2-mode)
   :config
-  (progn
-    (add-hook 'js-mode-hook (lambda () (setq js-indent-level 2)))
-    (use-package js2-mode
-      :mode (("\\.js$" . js2-mode)
-             ("Jakefile$" . js2-mode))
-      :interpreter ("node" . js2-mode)
-      :config
-      (progn
-        (add-hook 'js2-mode-hook (lambda () (setq mode-name "js2")))
-        (setq-default js2-basic-offset 2)
-        (setq-default js2-auto-indent-p t)
-        (setq-default js2-cleanup-whitespace t)
-        (setq-default js2-enter-indents-newline t)
-        (setq-default js2-global-externs "jQuery $")
-        (setq-default js2-indent-on-enter-key t)
-        (setq-default js2-show-parse-errors nil)
-        (setq-default js2-mode-indent-ignore-first-tab t)))))
+  (setq-default js2-basic-offset 2)
+  (setq-default js2-auto-indent-p t)
+  (setq-default js2-cleanup-whitespace t)
+  (setq-default js2-enter-indents-newline t)
+  (setq-default js2-global-externs "jQuery $")
+  (setq-default js2-indent-on-enter-key t)
+  (setq-default js2-show-parse-errors nil)
+  (setq-default js2-mode-indent-ignore-first-tab t))
 
 
 (use-package magit
@@ -523,7 +520,6 @@
 
 
 (use-package rainbow-mode
-  :disabled t
   :diminish rainbow-mode
   :config
   (add-hook 'sass-mode-hook 'rainbow-mode)
@@ -877,9 +873,26 @@
 
 
 ;;;; Custom variables
+(use-package ess-site
+  :mode (("\\.R$" . R-mode))
+  :init
+  (setq ess-eval-visibly nil) ; ESS will not print the evaluated commands, also speeds up the evaluation
+  (setq ess-ask-for-ess-directory nil) ; ;if you don't want to be prompted each time you start an interactive R session
+  (setq ess-use-auto-complete t)
+  (setq ac-auto-start 2)
+  (setq ac-auto-show-menu 0.2)
+  )
 
-;;(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-;;(load-local "custom" 'noerror)
+(load-local "company-ess")
+(use-package company
+  :init
+  (add-hook 'after-init-hook 'global-company-mode)
+  (add-to-list 'company-backends 'company-ess-backend))
+
+(use-package octave
+  :ensure t
+  :mode (("\\.m" . octave-mode)))
+
 (when (f-exists? "user.el")
   (load-local "user"))
 
